@@ -18,7 +18,7 @@ export default function Home() {
       newDigits[i] = digit;
     });
     setDigits(newDigits);
-    
+
     // Focus appropriate input
     const nextIndex = Math.min(pastedData.length, 5);
     inputRefs.current[nextIndex]?.focus();
@@ -47,9 +47,9 @@ export default function Home() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     const code = digits.join('');
-    
+
     if (code.length !== 6) {
       setError('Please enter the full 6-digit code.');
       // Shake animation trigger?
@@ -117,7 +117,7 @@ export default function Home() {
               />
             ))}
           </div>
-          
+
           {error && <p className="text-sm font-medium text-red-600 text-center animate-in fade-in bg-red-50 py-2 rounded-lg">{error}</p>}
 
           <button
@@ -125,7 +125,7 @@ export default function Home() {
             disabled={loading || digits.join('').length !== 6}
             className="w-full rounded-lg bg-zinc-900 py-4 text-sm font-bold uppercase tracking-widest text-white hover:bg-zinc-800 disabled:opacity-50 transition-all disabled:cursor-not-allowed transform active:scale-[0.98] shadow-md"
           >
-            {loading ? 'Validating...' : 'Start Assessment'}
+            {loading ? 'Validating...' : 'Begin Assessment'}
           </button>
         </form>
 
