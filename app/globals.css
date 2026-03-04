@@ -1,21 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #09090b; /* Zinc 950 */
-  --primary: #18181b; /* Zinc 900 */
-  --primary-foreground: #fafafa; /* Zinc 50 */
-  --secondary: #f4f4f5; /* Zinc 100 */
-  --secondary-foreground: #18181b; /* Zinc 900 */
-  --muted: #f4f4f5; /* Zinc 100 */
-  --muted-foreground: #71717a; /* Zinc 500 */
-  --accent: #f4f4f5; /* Zinc 100 */
-  --accent-foreground: #18181b; /* Zinc 900 */
-  --destructive: #ef4444; /* Red 500 */
-  --destructive-foreground: #fafafa; /* Zinc 50 */
-  --border: #e4e4e7; /* Zinc 200 */
-  --input: #e4e4e7; /* Zinc 200 */
-  --ring: #18181b; /* Zinc 900 */
+  --background: #ffefe6;
+  --foreground: #1d3866;
+  --primary: #1d3866;
+  --primary-foreground: #fff6f0;
+  --secondary: #fde3d4;
+  --secondary-foreground: #1d3866;
+  --muted: #fde3d4;
+  --muted-foreground: #6f82a5;
+  --accent: #fbbd99;
+  --accent-foreground: #1d3866;
+  --destructive: #1d3866;
+  --destructive-foreground: #fff6f0;
+  --border: #f9d4bf;
+  --input: #f9d4bf;
+  --ring: #1d3866;
 }
 
 body {
@@ -37,13 +37,34 @@ body {
 ::-webkit-scrollbar {
   width: 8px;
 }
+
 ::-webkit-scrollbar-track {
-  background: transparent; 
+  background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #e4e4e7; 
+  background: #f9d4bf;
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #d4d4d8; 
+  background: #f5c8ad;
+}
+
+.score-ring-loop {
+  animation: score-ring-loop 3.2s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform, filter;
+}
+
+@keyframes score-ring-loop {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: translateY(-12px) scale(1.06);
+    filter: brightness(1.1);
+  }
 }

@@ -90,12 +90,12 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-6 bg-zinc-50 font-sans text-zinc-900">
-      <div className="w-full max-w-md bg-white p-12 rounded-2xl shadow-sm border border-zinc-200 animate-in fade-in zoom-in duration-500">
-        <h1 className="mb-3 text-3xl font-black tracking-tighter text-zinc-900 sm:text-5xl text-center">
+    <main className="flex min-h-screen flex-col items-center justify-center p-6 bg-[#ffefe6] font-sans text-[#1d3866]">
+      <div className="w-full max-w-md bg-[#fff6f0] p-12 rounded-2xl shadow-[0_10px_40px_rgba(24,24,27,0.08)] border border-[#f9d4bf] animate-in fade-in zoom-in duration-500">
+        <h1 className="mb-3 text-3xl font-black tracking-tighter text-[#1d3866] sm:text-5xl text-center">
           WOULD YOU <br /> PAY YOU?
         </h1>
-        <p className="mb-10 text-zinc-500 font-medium text-center text-sm tracking-wide uppercase">
+        <p className="mb-10 text-[#6f82a5] font-medium text-center text-sm tracking-wide uppercase">
           Discover your true authority level.
         </p>
 
@@ -112,27 +112,27 @@ export default function Home() {
                 onChange={(e) => handleChange(e, i)}
                 onKeyDown={(e) => handleKeyDown(e, i)}
                 onPaste={handlePaste}
-                className="w-10 h-12 sm:w-12 sm:h-14 bg-white border border-zinc-200 rounded-lg text-center text-xl sm:text-2xl font-bold text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 focus:border-zinc-900 transition-all placeholder-transparent shadow-sm"
+                className="w-10 h-12 sm:w-12 sm:h-14 bg-[#fff6f0] border border-[#f9d4bf] rounded-lg text-center text-xl sm:text-2xl font-bold text-[#1d3866] focus:outline-none focus:ring-2 focus:ring-[#1d3866]/15 focus:border-[#1d3866] transition-all placeholder-transparent shadow-sm"
                 autoFocus={i === 0}
               />
             ))}
           </div>
 
-          {error && <p className="text-sm font-medium text-red-600 text-center animate-in fade-in bg-red-50 py-2 rounded-lg">{error}</p>}
+          {error && <p className="text-sm font-medium text-[#5a6f95] text-center animate-in fade-in bg-[#fde3d4] py-2 rounded-lg">{error}</p>}
 
           <button
             type="submit"
             disabled={loading || digits.join('').length !== 6}
-            className="w-full rounded-lg bg-zinc-900 py-4 text-sm font-bold uppercase tracking-widest text-white hover:bg-zinc-800 disabled:opacity-50 transition-all disabled:cursor-not-allowed transform active:scale-[0.98] shadow-md"
+            className="w-full rounded-lg bg-[#1d3866] py-4 text-sm font-bold uppercase tracking-widest text-white hover:bg-[#2a4a7f] disabled:opacity-50 transition-all disabled:cursor-not-allowed transform active:scale-[0.98] shadow-md"
           >
             {loading ? 'Validating...' : 'Begin Assessment'}
           </button>
         </form>
 
         <div className="mt-12 flex items-center justify-center space-x-3 opacity-40">
-          <div className="h-px w-8 bg-zinc-300"></div>
-          <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">Goat Mastermind</span>
-          <div className="h-px w-8 bg-zinc-300"></div>
+          <div className="h-px w-8 bg-[#f9d4bf]"></div>
+          <span className="text-[10px] text-[#6f82a5] uppercase tracking-widest font-bold">Goat Mastermind</span>
+          <div className="h-px w-8 bg-[#f9d4bf]"></div>
         </div>
       </div>
     </main>
