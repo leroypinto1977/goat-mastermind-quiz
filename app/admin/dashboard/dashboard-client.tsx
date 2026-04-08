@@ -1,90 +1,83 @@
 'use client';
 
-import { useActionState, useEffect, useRef, useState } from 'react';
-import { generateNewCode } from '@/app/admin/actions';
+import { useActionState } from 'react';
+import { createAndOpenCohort, closeCohort } from '@/app/admin/actions';
 
-export default function DashboardClient() {
-  const [state, formAction, isPending] = useActionState(generateNewCode, null);
-  const [showToast, setShowToast] = useState(false);
-  const formRef = useRef<HTMLFormElement>(null);
+type Cohort = {
+  id: string;
+  name: string;
+  isOpen: boolean;
+  openedAt: Date | null;
+  closedAt: Date | null;
+};
 
-  useEffect(() => {
-    if (state?.success && formRef.current) {
-      formRef.current.reset();
-    }
-  }, [state]);
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
-  };
+export default function CohortPanel({ activeCohort }: { activeCohort: Cohort | null }) {
+  const [state, formAction, isPending] = useActionState(createAndOpenCohort, null);
 
   return (
-    <div className="relative">
-      <form ref={formRef} action={formAction} className="space-y-5">
+    <div>
+      {/* Active cohort status */}
+      {activeCohort ? (
+        <div className="mb-6 p-5 rounded-xl bg-green-50 border border-green-200">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs font-bold text-green-600 uppercase tracking-widest">Active Cohort</span>
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-500 text-white uppercase tracking-wider">
+              <span className="w-1.5 h-1.5 rounded-full bg-white inline-block animate-pulse" />
+              Open
+            </span>
+          </div>
+          <p className="text-base font-black text-zinc-900 tracking-tight">{activeCohort.name}</p>
+          {activeCohort.openedAt && (
+            <p className="text-xs text-zinc-400 mt-0.5">
+              Opened {new Date(activeCohort.openedAt).toLocaleString()}
+            </p>
+          )}
+          <form action={async () => { await closeCohort(activeCohort.id); }} className="mt-4">
+            <button
+              type="submit"
+              className="w-full bg-red-600 text-white text-xs font-bold uppercase tracking-widest py-2.5 rounded-lg hover:bg-red-700 transition-all"
+            >
+              Close Cohort
+            </button>
+          </form>
+        </div>
+      ) : (
+        <div className="mb-6 p-4 rounded-xl bg-zinc-50 border border-zinc-200 text-center">
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-300 text-zinc-600 uppercase tracking-wider">
+            No Active Cohort
+          </span>
+        </div>
+      )}
+
+      {/* Open new cohort */}
+      <form action={formAction} className="space-y-4">
         <div>
-          <label htmlFor="fullName" className="block text-xs font-bold text-zinc-700 mb-1.5 uppercase tracking-wide">
-            Full Name <span className="text-red-500">*</span>
+          <label htmlFor="name" className="block text-xs font-bold text-zinc-700 mb-1.5 uppercase tracking-wide">
+            {activeCohort ? 'Switch to New Cohort' : 'Open New Cohort'}
           </label>
           <input
             type="text"
-            name="fullName"
-            id="fullName"
+            name="name"
+            id="name"
             required
-            className="w-full bg-white border border-zinc-300 rounded-lg px-4 py-3 text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 focus:border-zinc-900 transition-all placeholder-zinc-400"
-            placeholder="e.g. John Doe"
+            placeholder="e.g. 10 April 2026"
+            className="w-full bg-white border border-zinc-300 rounded-lg px-4 py-3 text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 focus:border-zinc-900 transition-all placeholder-zinc-400 text-sm"
           />
         </div>
-        
-        <div>
-          <label htmlFor="email" className="block text-xs font-bold text-zinc-700 mb-1.5 uppercase tracking-wide">
-            Email (Optional)
-          </label>
-          <input
-            type="email"
-            name="email"
-            id="email"
-            className="w-full bg-white border border-zinc-300 rounded-lg px-4 py-3 text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 focus:border-zinc-900 transition-all placeholder-zinc-400"
-            placeholder="john@example.com"
-          />
-        </div>
-
         <button
           type="submit"
           disabled={isPending}
-          className="w-full bg-zinc-900 text-white font-bold py-3.5 rounded-lg hover:bg-zinc-800 disabled:opacity-50 transition-all uppercase tracking-wide transform active:scale-[0.99] shadow-sm"
+          className="w-full bg-zinc-900 text-white font-bold py-3 rounded-lg hover:bg-zinc-800 disabled:opacity-50 transition-all uppercase tracking-wide text-xs transform active:scale-[0.99]"
         >
-          {isPending ? 'Generating...' : 'Generate Code'}
+          {isPending ? 'Opening...' : activeCohort ? 'Switch Cohort' : 'Open Cohort'}
         </button>
       </form>
-        
-      {state?.message && !state.success && (
-        <div className={`mt-6 p-4 rounded-lg text-sm font-medium border ${state.error ? 'bg-red-50 text-red-600 border-red-100' : 'bg-green-50 text-green-600 border-green-100'}`}>
+
+      {state?.message && (
+        <div className={`mt-4 p-3 rounded-lg text-xs font-medium border ${state.error ? 'bg-red-50 text-red-600 border-red-100' : 'bg-green-50 text-green-700 border-green-100'}`}>
           {state.message}
         </div>
       )}
-
-      {state?.success && state.code && (
-        <div className="mt-8 p-8 bg-zinc-50 rounded-xl border border-zinc-200 flex flex-col items-center animate-in zoom-in duration-500">
-            <span className="text-zinc-400 text-[10px] uppercase tracking-widest font-bold mb-3">Generated Code</span>
-            <span className="text-5xl font-mono font-black text-zinc-900 tracking-wider mb-6">{state.code}</span>
-            <button 
-                onClick={() => copyToClipboard(state.code)}
-                className="text-xs bg-white hover:bg-zinc-100 border border-zinc-200 px-4 py-2 rounded-full text-zinc-600 font-bold transition-all uppercase tracking-wide hover:border-zinc-300"
-            >
-                Copy Code
-            </button>
-        </div>
-      )}
-
-      {/* Toast Notification */}
-      <div className={`fixed bottom-6 right-6 flex items-center bg-zinc-900 text-white px-5 py-3 rounded-lg shadow-lg transition-all duration-300 transform ${showToast ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'}`}>
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 mr-3 text-zinc-400">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <span className="font-bold text-sm tracking-wide">Code Copied</span>
-      </div>
     </div>
   );
 }

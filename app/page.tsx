@@ -1,70 +1,35 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function Home() {
-  const [digits, setDigits] = useState(['', '', '', '', '', '']);
+  const [fullName, setFullName] = useState('');
+  const [mobileNumber, setMobileNumber] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6).split('');
-    const newDigits = [...digits];
-    pastedData.forEach((digit, i) => {
-      newDigits[i] = digit;
-    });
-    setDigits(newDigits);
-
-    // Focus appropriate input
-    const nextIndex = Math.min(pastedData.length, 5);
-    inputRefs.current[nextIndex]?.focus();
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
-    if (e.key === 'Backspace' && !digits[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-    const value = e.target.value;
-    if (!/^\d*$/.test(value)) return;
-
-    const newDigits = [...digits];
-    // Take the last character entered
-    newDigits[index] = value.substring(value.length - 1);
-    setDigits(newDigits);
-
-    if (value && index < 5) {
-      inputRefs.current[index + 1]?.focus();
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    const code = digits.join('');
-
-    if (code.length !== 6) {
-      setError('Please enter the full 6-digit code.');
-      // Shake animation trigger?
+    if (!fullName.trim()) {
+      setError('Please enter your full name.');
+      return;
+    }
+    if (!mobileNumber.trim()) {
+      setError('Please enter your mobile number.');
       return;
     }
 
     setLoading(true);
 
     try {
-      const res = await fetch('/api/validate-code', {
+      const res = await fetch('/api/start-test', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ testCode: code }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fullName: fullName.trim(), mobileNumber: mobileNumber.trim() }),
       });
 
       const data = await res.json();
@@ -73,18 +38,13 @@ export default function Home() {
         throw new Error(data.error || 'Something went wrong');
       }
 
-      if (data.valid) {
-        if (data.taken) {
-          router.push(`/results?code=${code}`);
-        } else {
-          router.push(`/test?code=${code}`);
-        }
+      if (data.taken) {
+        router.push(`/results?id=${data.userId}`);
       } else {
-        setError('Invalid code. Please check and try again.');
-        setLoading(false); // Stop loading if invalid
+        router.push(`/test?id=${data.userId}`);
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to validate code.');
+      setError(err.message || 'Failed to start. Please try again.');
       setLoading(false);
     }
   };
@@ -99,33 +59,48 @@ export default function Home() {
           Discover your true authority level.
         </p>
 
-        <form onSubmit={handleSubmit} className="flex flex-col space-y-8">
-          <div className="flex justify-center gap-2 sm:gap-3">
-            {digits.map((digit, i) => (
-              <input
-                key={i}
-                ref={(el) => { inputRefs.current[i] = el; }}
-                type="text"
-                inputMode="numeric"
-                maxLength={1}
-                value={digit}
-                onChange={(e) => handleChange(e, i)}
-                onKeyDown={(e) => handleKeyDown(e, i)}
-                onPaste={handlePaste}
-                className="w-10 h-12 sm:w-12 sm:h-14 bg-[#fff6f0] border border-[#f9d4bf] rounded-lg text-center text-xl sm:text-2xl font-bold text-[#1d3866] focus:outline-none focus:ring-2 focus:ring-[#1d3866]/15 focus:border-[#1d3866] transition-all placeholder-transparent shadow-sm"
-                autoFocus={i === 0}
-              />
-            ))}
+        <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
+          <div className="flex flex-col space-y-1.5">
+            <label htmlFor="fullName" className="text-xs font-bold text-[#6f82a5] uppercase tracking-wide">
+              Full Name
+            </label>
+            <input
+              id="fullName"
+              type="text"
+              value={fullName}
+              onChange={e => setFullName(e.target.value)}
+              placeholder="e.g. John Doe"
+              className="w-full bg-[#fff6f0] border border-[#f9d4bf] rounded-lg px-4 py-3 text-[#1d3866] focus:outline-none focus:ring-2 focus:ring-[#1d3866]/15 focus:border-[#1d3866] transition-all placeholder-[#d59f81] shadow-sm"
+              autoFocus
+            />
           </div>
 
-          {error && <p className="text-sm font-medium text-[#5a6f95] text-center animate-in fade-in bg-[#fde3d4] py-2 rounded-lg">{error}</p>}
+          <div className="flex flex-col space-y-1.5">
+            <label htmlFor="mobileNumber" className="text-xs font-bold text-[#6f82a5] uppercase tracking-wide">
+              Mobile Number
+            </label>
+            <input
+              id="mobileNumber"
+              type="tel"
+              value={mobileNumber}
+              onChange={e => setMobileNumber(e.target.value)}
+              placeholder="e.g. 9876543210"
+              className="w-full bg-[#fff6f0] border border-[#f9d4bf] rounded-lg px-4 py-3 text-[#1d3866] focus:outline-none focus:ring-2 focus:ring-[#1d3866]/15 focus:border-[#1d3866] transition-all placeholder-[#d59f81] shadow-sm"
+            />
+          </div>
+
+          {error && (
+            <p className="text-sm font-medium text-[#5a6f95] text-center animate-in fade-in bg-[#fde3d4] py-2 rounded-lg">
+              {error}
+            </p>
+          )}
 
           <button
             type="submit"
-            disabled={loading || digits.join('').length !== 6}
-            className="w-full rounded-lg bg-[#1d3866] py-4 text-sm font-bold uppercase tracking-widest text-white hover:bg-[#2a4a7f] disabled:opacity-50 transition-all disabled:cursor-not-allowed transform active:scale-[0.98] shadow-md"
+            disabled={loading}
+            className="w-full rounded-lg bg-[#1d3866] py-4 text-sm font-bold uppercase tracking-widest text-white hover:bg-[#2a4a7f] disabled:opacity-50 transition-all disabled:cursor-not-allowed transform active:scale-[0.98] shadow-md mt-4"
           >
-            {loading ? 'Validating...' : 'Begin Assessment'}
+            {loading ? 'Starting...' : 'Begin Assessment'}
           </button>
         </form>
 

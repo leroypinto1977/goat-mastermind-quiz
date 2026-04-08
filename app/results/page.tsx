@@ -3,9 +3,9 @@ import Link from 'next/link';
 
 import { prisma } from '@/app/lib/prisma';
 
-async function getResult(code: string) {
+async function getResult(id: string) {
   const user = await prisma.testUser.findUnique({
-    where: { testCode: code },
+    where: { id },
   });
   return user;
 }
@@ -43,15 +43,15 @@ function getScorePalette(score: number) {
 export default async function ResultsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }> // Next.js 15 requires awaiting searchParams
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-  const { code } = await searchParams;
+  const { id } = await searchParams;
 
-  if (!code || typeof code !== 'string') {
+  if (!id || typeof id !== 'string') {
     redirect('/');
   }
 
-  const user = await getResult(code);
+  const user = await getResult(id);
 
   if (!user || !user.hasTakenTest || user.score === null) {
     redirect('/');

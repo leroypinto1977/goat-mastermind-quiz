@@ -10,15 +10,29 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Cohort {
+  id        String     @id @default(uuid())
+  name      String
+  isOpen    Boolean    @default(false) @map("is_open")
+  openedAt  DateTime?  @map("opened_at")
+  closedAt  DateTime?  @map("closed_at")
+  createdAt DateTime   @default(now()) @map("created_at")
+  users     TestUser[]
+
+  @@map("cohorts")
+}
+
 model TestUser {
   id             String   @id @default(uuid())
   fullName       String   @map("full_name")
+  mobileNumber   String   @unique @map("mobile_number")
   email          String?
-  testCode       String   @unique @map("test_code") @db.VarChar(6)
   hasTakenTest   Boolean  @default(false) @map("has_taken_test")
   score          Int?
-  authorityLevel String?  @map("authority_level") // "Blocked", "Underpriced", "Ready"
+  authorityLevel String?  @map("authority_level")
   answers        Json?
+  cohortId       String?  @map("cohort_id")
+  cohort         Cohort?  @relation(fields: [cohortId], references: [id])
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 

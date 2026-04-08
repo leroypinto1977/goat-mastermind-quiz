@@ -4,46 +4,41 @@ import { prisma } from '@/app/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { signOut } from '@/auth';
 
-export async function generateNewCode(prevState: any, formData: FormData) {
-  const fullName = formData.get('fullName') as string;
-  const email = formData.get('email') as string | null;
+export async function createAndOpenCohort(prevState: any, formData: FormData) {
+  const name = (formData.get('name') as string)?.trim();
 
-  if (!fullName) {
-    return { message: 'Full name is required', error: true };
-  }
-
-  let code = '';
-  let isUnique = false;
-  let attempts = 0;
-
-  // Generate unique code with retry logic
-  while (!isUnique && attempts < 10) {
-    code = Math.floor(100000 + Math.random() * 900000).toString();
-    const existing = await prisma.testUser.findUnique({ where: { testCode: code } });
-    if (!existing) {
-      isUnique = true;
-    }
-    attempts++;
-  }
-
-  if (!isUnique) {
-    return { message: 'Failed to generate a unique code. Please try again.', error: true };
+  if (!name) {
+    return { error: true, message: 'Cohort name is required.' };
   }
 
   try {
-    await prisma.testUser.create({
-      data: {
-        fullName,
-        email,
-        testCode: code,
-      },
+    // Close any currently open cohort first
+    await prisma.cohort.updateMany({
+      where: { isOpen: true },
+      data: { isOpen: false, closedAt: new Date() },
+    });
+
+    await prisma.cohort.create({
+      data: { name, isOpen: true, openedAt: new Date() },
     });
 
     revalidatePath('/admin/dashboard');
-    return { message: `Code generated: ${code}`, success: true, code };
+    return { success: true, message: `Cohort "${name}" is now open.` };
   } catch (e) {
     console.error(e);
-    return { message: 'Database error occurred.', error: true };
+    return { error: true, message: 'Failed to create cohort.' };
+  }
+}
+
+export async function closeCohort(cohortId: string) {
+  try {
+    await prisma.cohort.update({
+      where: { id: cohortId },
+      data: { isOpen: false, closedAt: new Date() },
+    });
+    revalidatePath('/admin/dashboard');
+  } catch (e) {
+    console.error(e);
   }
 }
 

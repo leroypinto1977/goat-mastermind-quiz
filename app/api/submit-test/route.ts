@@ -1,16 +1,11 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { calculateScore, getAuthorityLevel, QUESTIONS } from '@/app/lib/test-config';
-
 import { prisma } from '@/app/lib/prisma';
 
-// const prisma = new PrismaClient(); // Removed
-
-
 const schema = z.object({
-  testCode: z.string().length(6).regex(/^\d+$/),
-  answers: z.record(z.string(), z.number()), // map of questionId -> optionIndex
+  userId: z.string().uuid(),
+  answers: z.record(z.string(), z.number()),
 });
 
 export async function POST(request: Request) {
@@ -22,56 +17,48 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid data' }, { status: 400 });
     }
 
-    const { testCode, answers } = result.data;
+    const { userId, answers } = result.data;
 
-    // Validate code and check if already taken
-    const user = await prisma.testUser.findUnique({
-      where: { testCode },
-    });
+    const user = await prisma.testUser.findUnique({ where: { id: userId } });
 
     if (!user) {
-      return NextResponse.json({ error: 'Invalid code' }, { status: 404 });
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     if (user.hasTakenTest) {
-      return NextResponse.json({ error: 'Test already taken' }, { status: 403 });
+      return NextResponse.json({ error: 'Test already submitted' }, { status: 403 });
     }
 
-    // Validate that all questions are answered
     const answerKeys = Object.keys(answers).map(Number);
     const allAnswered = QUESTIONS.every(q => answerKeys.includes(q.id));
-    
+
     if (!allAnswered) {
-        return NextResponse.json({ error: 'All questions must be answered' }, { status: 400 });
+      return NextResponse.json({ error: 'All questions must be answered' }, { status: 400 });
     }
 
-    // Calculate score server-side
-    // Convert string keys to number for valid calculation type check
     const numericAnswers: Record<number, number> = {};
     for (const key in answers) {
-        numericAnswers[Number(key)] = answers[key];
+      numericAnswers[Number(key)] = answers[key];
     }
-    
+
     const score = calculateScore(numericAnswers);
     const { level } = getAuthorityLevel(score);
 
-    // Update user in DB
-    const updatedUser = await prisma.testUser.update({
-      where: { testCode },
+    // Tag with the currently open cohort (if any)
+    const openCohort = await prisma.cohort.findFirst({ where: { isOpen: true } });
+
+    await prisma.testUser.update({
+      where: { id: userId },
       data: {
         score,
         authorityLevel: level,
-        answers: answers as any, // Json type
+        answers: answers as any,
         hasTakenTest: true,
+        cohortId: openCohort?.id ?? null,
       },
     });
 
-    return NextResponse.json({ 
-        success: true,
-        score,
-        authorityLevel: level
-    });
-
+    return NextResponse.json({ success: true, score, authorityLevel: level });
   } catch (error) {
     console.error('Error submitting test:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

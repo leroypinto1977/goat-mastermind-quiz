@@ -7,7 +7,7 @@ import { QUESTIONS } from '@/app/lib/test-config';
 function TestContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const code = searchParams.get('code');
+  const code = searchParams.get('id');
 
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -72,7 +72,7 @@ function TestContent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          testCode: code,
+          userId: code,
           answers
         })
       });
@@ -83,7 +83,7 @@ function TestContent() {
         throw new Error(data.error || 'Submission failed');
       }
 
-      router.push(`/results?code=${code}`);
+      router.push(`/results?id=${code}`);
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Please try again.');
       setSubmitting(false);
