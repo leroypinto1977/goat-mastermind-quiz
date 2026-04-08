@@ -17,13 +17,15 @@ type User = {
   hasTakenTest: boolean;
   score: number | null;
   authorityLevel: string | null;
-  answers: Record<string, number> | null;
+  answers: unknown;
   cohort: Cohort | null;
   createdAt: Date;
 };
 
 function AnswerModal({ user, onClose }: { user: User; onClose: () => void }) {
-  const answers = user.answers as Record<string, number> | null;
+  const answers = (user.answers && typeof user.answers === 'object' && !Array.isArray(user.answers))
+    ? user.answers as Record<string, number>
+    : null;
 
   const authorityColor =
     user.score !== null && user.score > 70
