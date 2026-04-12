@@ -3,6 +3,8 @@ import { handleSignOut } from '@/app/admin/actions';
 import CohortPanel from './dashboard-client';
 import UsersTable from './users-table';
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   const [users, cohorts] = await Promise.all([
     prisma.testUser.findMany({
