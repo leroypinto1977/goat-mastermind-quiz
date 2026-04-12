@@ -21,7 +21,7 @@ export default async function DashboardPage() {
   const inCohortCount = users.filter(u => u.cohortId === activeCohort?.id && u.hasTakenTest).length;
 
   return (
-    <div className="min-h-screen font-sans text-zinc-900 bg-zinc-50 flex">
+    <div className="min-h-screen font-sans text-zinc-900 bg-zinc-50 flex overflow-x-hidden">
       {/* Sidebar */}
       <aside className="fixed w-64 h-full bg-white border-r border-zinc-200 hidden md:flex flex-col">
         <div className="p-8 border-b border-zinc-100">
@@ -48,7 +48,7 @@ export default async function DashboardPage() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 ml-0 md:ml-64 p-8 overflow-y-auto h-screen">
+      <main className="flex-1 ml-0 md:ml-64 p-8">
         {/* Mobile Header */}
         <div className="md:hidden flex justify-between items-center mb-6 pb-4 border-b border-zinc-200">
           <h1 className="text-xl font-black text-zinc-900">GOAT <span className="text-zinc-400">ADMIN</span></h1>
@@ -63,7 +63,7 @@ export default async function DashboardPage() {
           <div className="lg:col-span-1 space-y-6">
 
             {/* Cohort Management */}
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-zinc-200 sticky top-8">
+            <div className="bg-white rounded-2xl p-8 shadow-sm border border-zinc-200">
               <h2 className="text-lg font-bold text-zinc-900 mb-6">Cohort Management</h2>
               <CohortPanel activeCohort={activeCohort} />
             </div>
